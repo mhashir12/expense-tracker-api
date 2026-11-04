@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/6.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
-
 from pathlib import Path
 from datetime import timedelta
 
@@ -140,3 +139,17 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
 }
+
+import os
+
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY",
+    "dev-only-insecure-key-do-not-use-in-production-0123456789",
+)
+
+DEBUG = os.environ.get("DEBUG", "True") == "True"
+
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles" 
