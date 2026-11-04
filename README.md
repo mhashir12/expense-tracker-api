@@ -1,5 +1,9 @@
 # Expense Tracker API
 
+**Live demo:** https://mhashir.pythonanywhere.com/api/expenses/ (returns `401` until you register and log in with a token; see the endpoints below)
+
+Try it: `POST https://mhashir.pythonanywhere.com/api/register/`, then `POST https://mhashir.pythonanywhere.com/api/token/`, then send the `access` token as `Authorization: Bearer <token>`.
+
 A REST API built with Django and Django REST Framework where each user registers, logs in with JWT, and manages their own expenses. Users can only see and change their own data, and a summary endpoint returns spending totals for a dashboard.
 
 ## Features
@@ -21,7 +25,7 @@ A REST API built with Django and Django REST Framework where each user registers
 - django-filter
 - SQLite (development)
 
-## Setup 
+## Setup git 
 
 ```bash
 # 1. Clone the repository
