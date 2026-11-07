@@ -1,10 +1,29 @@
 # Expense Tracker API
 
-**Live demo:** https://mhashir.pythonanywhere.com/api/expenses/ (returns `401` until you register and log in with a token; see the endpoints below)
-
-Try it: `POST https://mhashir.pythonanywhere.com/api/register/`, then `POST https://mhashir.pythonanywhere.com/api/token/`, then send the `access` token as `Authorization: Bearer <token>`.
-
 A REST API built with Django and Django REST Framework where each user registers, logs in with JWT, and manages their own expenses. Users can only see and change their own data, and a summary endpoint returns spending totals for a dashboard.
+
+## Live Demo
+
+**Base URL:** https://expense-tracker-api-amu-554b.vercel.app
+
+Demo API only, so please don't submit real personal data. Hosted on Vercel with a Neon Postgres database. The first request after a period of inactivity may take a few seconds (serverless cold start).
+
+Opening the base URL returns a JSON overview of the available routes. See [API Endpoints](#api-endpoints) for the full list.
+
+### Try it (PowerShell)
+
+```powershell
+$base = "https://expense-tracker-api-amu-554b.vercel.app"
+
+# Register a user, then log in
+$body = @{ username = "your-username"; password = "YourStrongPass123" } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri "$base/api/register/" -ContentType "application/json" -Body $body
+$tok = Invoke-RestMethod -Method Post -Uri "$base/api/token/" -ContentType "application/json" -Body $body
+
+# Call a protected endpoint
+$h = @{ Authorization = "Bearer $($tok.access)" }
+Invoke-RestMethod -Uri "$base/api/expenses/" -Headers $h
+```
 
 ## Features
 
@@ -23,9 +42,10 @@ A REST API built with Django and Django REST Framework where each user registers
 - Django REST Framework
 - djangorestframework-simplejwt (JWT authentication)
 - django-filter
-- SQLite (development)
+- SQLite (local development) and PostgreSQL on Neon (production)
+- Deployed on Vercel
 
-## Setup git 
+## Setup
 
 ```bash
 # 1. Clone the repository
@@ -40,17 +60,40 @@ venv\Scripts\Activate.ps1        # Windows PowerShell
 # 3. Install dependencies
 python -m pip install -r requirements.txt
 
-# 4. Create the database tables
+# 4. Enable local development mode (DEBUG defaults to False)
+$env:DEBUG="True"                # Windows PowerShell
+# export DEBUG=True              # macOS / Linux
+
+# 5. Create the database tables
 python manage.py migrate
 
-# 5. (Optional) create an admin user
+# 6. (Optional) create an admin user
 python manage.py createsuperuser
 
-# 6. Run the server
+# 7. Run the server
 python manage.py runserver
 ```
 
-The API is now available at `http://127.0.0.1:8000/api/`.
+The API is now available at `http://127.0.0.1:8000/api/`. Without `DATABASE_URL` set, the app uses a local SQLite file.
+
+## Configuration
+
+Settings are read from environment variables:
+
+| Variable | Required | Description |
+|---|---|---|
+| `SECRET_KEY` | Yes in production | Django secret key. Not needed when `DEBUG=True`. |
+| `DEBUG` | No | Set to `True` for local development. Defaults to `False`. |
+| `ALLOWED_HOSTS` | No | Extra comma-separated hosts. `.vercel.app` and localhost are always allowed. |
+| `DATABASE_URL` | No | PostgreSQL connection string. If unset, SQLite is used. |
+
+## Deployment (Vercel + Neon)
+
+1. Push the repository to GitHub and import it in Vercel (Django is detected from `manage.py`).
+2. Add a Neon Postgres database from the project's Storage tab.
+3. Set `SECRET_KEY` and `DEBUG=False` in the project's environment variables.
+4. Run `python manage.py migrate` once against the Neon database (with its connection string in `DATABASE_URL`).
+5. Deploy. Vercel redeploys on every push to `main`.
 
 ## API Endpoints
 
@@ -145,10 +188,13 @@ Authorization: Bearer <access token>
 - Every expense query is filtered to the logged-in user, so other users' records return `404`.
 - The `user` field is read-only; it is taken from the token, never from the request body.
 - Access tokens are short-lived; use the refresh token to get a new one.
+- Secrets (`SECRET_KEY`, database URL) come from environment variables and are not stored in the repository.
 
 ## Running Tests
 
 ```bash
+$env:DEBUG="True"                # Windows PowerShell
+# export DEBUG=True              # macOS / Linux
 python manage.py test
 ```
 
@@ -163,4 +209,4 @@ The suite has 20 tests covering:
 
 ## Author
 
-Mohammad Hashir
+Mohammad Hashir 
