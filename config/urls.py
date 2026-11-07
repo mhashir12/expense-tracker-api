@@ -15,9 +15,27 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import path, include
 
+
+def home(request):
+    return JsonResponse({
+        "name": "Expense Tracker API",
+        "status": "ok",
+        "endpoints": {
+            "register": "/api/register/",
+            "token": "/api/token/",
+            "token_refresh": "/api/token/refresh/",
+            "expenses": "/api/expenses/ (Bearer token required)",
+            "admin": "/admin/",
+        },
+        "source": "https://github.com/mhashir12/expense-tracker-api",
+    })
+
+
 urlpatterns = [
+    path('', home),
     path('admin/', admin.site.urls),
-    path('api/', include('expenses.urls')), 
-] 
+    path('api/', include('expenses.urls')),
+]
